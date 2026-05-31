@@ -1,3 +1,5 @@
+import 'package:financial_tracker/ui/widget/latest_transaction.dart';
+
 import '../../common/config/dependencies.dart';
 import '../../common/types/date_filter_type.dart';
 import '../../domain/entity/transaction_entity.dart';
@@ -38,9 +40,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Controle Financeiro',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            const Text(
+              'Controle Financeiro',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const LatestTransaction(transactionValue: 500, transactionTitle: "latestTransactionTitle")
+          ],
         ),
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
