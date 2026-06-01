@@ -11,6 +11,11 @@ class TransactionRepositoryImpl implements TransactionRepositoryContract {
     : _dataSource = dataSource;
 
   @override
+  Future<Result<void, Failure>> updateTransaction(String id) {
+    return _dataSource.updateTransaction(id);
+  }
+
+  @override
   Future<Result<void, Failure>> deleteTransacion(String id) {
     return _dataSource.removeTransacion(id);
   }
@@ -37,6 +42,13 @@ class TransactionRepositoryImpl implements TransactionRepositoryContract {
   @override
   Future<Result<void, Failure>> saveTransacion(TransactionEntity transaction) {
     return _dataSource.storeTransacion(transaction);
+  }
+
+  @override
+  Future<Result<void, Failure>> updateTransacion(
+    TransactionEntity transaction,
+  ) {
+    return _dataSource.updateTransaction(transaction.id);
   }
 
   @override

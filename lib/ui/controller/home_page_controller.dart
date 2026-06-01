@@ -21,6 +21,7 @@ class HomePageController {
     searchTransactionsByDate = Command2(_searchTransactionsByDate);
     saveTransaction = Command1(_saveTransaction);
     undoDelectedTransaction = Command1(_undoDelectedTransaction);
+    updateTransaction = Command1(_updateTransaction);
     deleteTransaction = Command1(_deleteTransaction);
     //loadSample = Command0<void, void>(_resetToSample);
     incomes = Computed(
@@ -61,6 +62,7 @@ class HomePageController {
   late final Command0<List<TransactionEntity>, Failure> load;
   late final Command1<void, Failure, TransactionEntity> saveTransaction;
   late final Command1<void, Failure, TransactionEntity> undoDelectedTransaction;
+  late final Command1<void, Failure, TransactionEntity> updateTransaction;
   late final Command1<void, Failure, String> deleteTransaction;
   late final Command2<List<TransactionEntity>, Failure, DateTime, DateTime>
   searchTransactionsByDate;
@@ -87,6 +89,18 @@ class HomePageController {
   late final Computed<double> totalIncome;
   late final Computed<double> totalExpense;
   late final Computed<double> balance;
+
+  late final Computed<TransactionEntity?> latestTransaction = Computed(() {
+    if (_transactions.value.isEmpty) {
+      return null;
+    }
+
+    final transactions = [..._transactions.value];
+
+    transactions.sort((a, b) => b.date.compareTo(a.date));
+
+    return transactions.first;
+  });
 
   ReadonlySignal<List<TransactionEntity>> get transctions => _transactions;
   ReadonlySignal<bool> get isFilterVisible => _isFilterVisible;
@@ -161,7 +175,6 @@ class HomePageController {
         transaction: last,
       ));
 
-
       if (result.isSuccess) {
         final list = [..._transactions.value];
         list.insert(index, last);
@@ -175,6 +188,26 @@ class HomePageController {
     }
 
     return Error(DefaultError('Nenhuma transação excluída para restaurar.'));
+  }
+
+  Future<Result<void, Failure>> _updateTransaction(
+    TransactionEntity transaction,
+  ) async {
+    final result = await _transactionsUseCases.updateTransaction.call((
+      transaction: transaction,
+    ));
+
+    result.fold(
+      onSuccess: (_) {
+        _transactions.value =
+            _transactions.value
+                .map((item) => item.id == transaction.id ? transaction : item)
+                .toList();
+      },
+      onFailure: (failure) => print('Erro ao atualizar transação: $failure'),
+    );
+
+    return result;
   }
 
   // exclui transação e atualiza signal

@@ -1,9 +1,8 @@
-
 import 'package:faker_dart/faker_dart.dart';
 import '../domain/entity/transaction_entity.dart';
 
 abstract class TransactionFakeFactory {
-  static TransactionEntity factory() {
+  static TransactionEntity factory({required String id}) {
     final faker = Faker.instance;
     faker.setLocale(FakerLocaleType.pt_PT);
 

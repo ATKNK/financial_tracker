@@ -11,6 +11,9 @@ class TransactionForm extends StatefulWidget {
   /// e o resultado da execução
   final Command1<void, Failure, TransactionEntity> submitCommand;
 
+  /// Transação inicial para edição. Se nulo, o formulário cria uma nova transação.
+  final TransactionEntity? initialTransaction;
+
   /// Função de callback quando o formulário é enviado
   //final Function(TransactionEntity newTransaction) onSubmit;
 
@@ -25,6 +28,7 @@ class TransactionForm extends StatefulWidget {
     //required this.onSubmit,
     required this.type,
     required this.color,
+    this.initialTransaction,
     required this.submitCommand,
   });
 
@@ -37,6 +41,17 @@ class _TransactionFormState extends State<TransactionForm> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialTransaction;
+    if (initial != null) {
+      _titleController.text = initial.title;
+      _amountController.text = initial.amount.toString();
+      _selectedDate = initial.date;
+    }
+  }
 
   @override
   void dispose() {
@@ -67,12 +82,18 @@ class _TransactionFormState extends State<TransactionForm> {
       final enteredTitle = _titleController.text;
       final enteredAmount = double.parse(_amountController.text);
 
-      final newTransaction = TransactionEntity(
-        title: enteredTitle,
-        amount: enteredAmount,
-        date: _selectedDate,
-        type: widget.type,
-      );
+      final newTransaction =
+          widget.initialTransaction?.copyWith(
+            title: enteredTitle,
+            amount: enteredAmount,
+            date: _selectedDate,
+          ) ??
+          TransactionEntity(
+            title: enteredTitle,
+            amount: enteredAmount,
+            date: _selectedDate,
+            type: widget.type,
+          );
 
       //widget.onSubmit(newTransaction);
       await widget.submitCommand.execute(newTransaction);
@@ -82,7 +103,7 @@ class _TransactionFormState extends State<TransactionForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Erro ao adicionar ${widget.type.nameSingular}: ${widget.submitCommand.resultSignal.value?.failureValueOrNull ?? 'Erro desconhecido'}',
+              'Erro ao ${widget.initialTransaction == null ? 'adicionar' : 'atualizar'} ${widget.type.nameSingular}: ${widget.submitCommand.resultSignal.value?.failureValueOrNull ?? 'Erro desconhecido'}',
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
@@ -102,7 +123,11 @@ class _TransactionFormState extends State<TransactionForm> {
       // Mostra uma mensagem de sucesso
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${widget.type.nameSingular} Adicionada com Sucesso!'),
+          content: Text(
+            widget.initialTransaction == null
+                ? '${widget.type.nameSingular} adicionada com sucesso!'
+                : '${widget.type.nameSingular} atualizada com sucesso!',
+          ),
           backgroundColor: widget.color,
           duration: const Duration(seconds: 2),
         ),
@@ -217,7 +242,9 @@ class _TransactionFormState extends State<TransactionForm> {
                             ),
                           )
                           : Text(
-                            'Adicionar ${widget.type.nameSingular}',
+                            widget.initialTransaction == null
+                                ? 'Adicionar ${widget.type.nameSingular}'
+                                : 'Salvar ${widget.type.nameSingular}',
                             style: const TextStyle(fontSize: 16),
                           ),
                 ),

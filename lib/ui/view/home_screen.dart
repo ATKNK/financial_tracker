@@ -42,38 +42,23 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text(
-              'Controle Financeiro',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const LatestTransaction(transactionValue: 500, transactionTitle: "latestTransactionTitle")
+            const Text('Controle Financeiro'),
+
+            Watch((context) {
+              final latest = viewModelController.latestTransaction.value;
+
+              if (latest == null) {
+                return const SizedBox.shrink();
+              }
+
+              return LatestTransaction(
+                transactionValue: latest.amount,
+                transactionTitle: latest.title,
+                transactionType: latest.type,
+              );
+            }),
           ],
         ),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        elevation: 0,
-        actions: [
-          Watch((context) {
-            final isVisible = viewModelController.isFilterVisible.value;
-            return IconButton(
-              icon: Icon(isVisible ? Icons.filter_list_off : Icons.filter_list),
-              tooltip: isVisible ? 'Ocultar filtros' : 'Mostrar filtros',
-              onPressed: viewModelController.toggleFilterVisibility,
-            );
-          }),
-          // IconButton(
-          //   icon: Icon(
-          //     _isFilterVisible ? Icons.filter_list_off : Icons.filter_list,
-          //   ),
-          //   onPressed: _toggleFilterVisibility,
-          //   tooltip: _isFilterVisible ? 'Ocultar Filtros' : 'Mostrar Filtros',
-          // ),
-          IconButton(
-            icon: const Icon(Icons.receipt_long),
-            onPressed: () {},
-            tooltip: 'Visualizar todas as transações',
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -180,8 +165,17 @@ class _HomeScreenState extends State<HomeScreen> {
               return TransactionCardSheets(
                 incomeTransactions: incomes,
                 expenseTransactions: expenses,
-                onDelete: (id) {
-                  viewModelController.deleteTransaction.execute(id);
+                onEdit: (id) async {
+                  final matchingTransactions =
+                      viewModelController.transctions.value
+                          .where((t) => t.id == id)
+                          .toList();
+                  if (matchingTransactions.isNotEmpty) {
+                    _showEditSheet(context, matchingTransactions.first);
+                  }
+                },
+                onDelete: (id) async {
+                  await viewModelController.deleteTransaction.execute(id);
                 },
                 undoDelete: viewModelController.undoDelectedTransaction,
                 scaffoldContext: context,
@@ -276,6 +270,15 @@ class _HomeScreenState extends State<HomeScreen> {
       // onSubmit: (title, amount, date) {
       //   transactionProvider.addExpense(title, amount, date);
       // },
+    );
+  }
+
+  void _showEditSheet(BuildContext context, TransactionEntity transaction) {
+    TransactionSheet.show(
+      context: context,
+      type: transaction.type,
+      initialTransaction: transaction,
+      submitCommand: viewModelController.updateTransaction,
     );
   }
 }

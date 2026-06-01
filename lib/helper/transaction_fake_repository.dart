@@ -14,7 +14,7 @@ class TransactionFakeRepository {
   TransactionFakeRepository({int numInstance = 10}) {
     transactions = List.generate(
       numInstance,
-      (index) => TransactionFakeFactory.factory(),
+      (index) => TransactionFakeFactory.factory(id: 'transaction_$index'),
     );
   }
   // StudentFakeApiDataBase() {
@@ -31,6 +31,16 @@ class TransactionFakeRepository {
     return (transactions.isEmpty)
         ? throw DatasourceResultEmpty(MessagesError.emptySharedP)
         : jsonEncode(transactions.map((e) => e.toMap()).toList());
+  }
+
+  Future<void> updateData(String id) async {
+    final index = transactions.indexWhere((element) => element.id == id);
+
+    if (index == -1) {
+      throw RecordNotFound(MessagesError.recordNotFound);
+    }
+
+    transactions[index] = TransactionFakeFactory.factory(id: id);
   }
 
   Future<void> deleteData(String id) async {

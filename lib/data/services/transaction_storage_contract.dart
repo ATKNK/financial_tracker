@@ -12,6 +12,7 @@ abstract class TransactionStorageContract {
     DateTime startDate,
     DateTime endDate,
   );
+  Future<Result<void, Failure>> updateTransaction(String id);
   Future<Result<void, Failure>> removeTransacion(String id);
   Future<Result<void, Failure>> storeTransacion(TransactionEntity transaction);
 }
