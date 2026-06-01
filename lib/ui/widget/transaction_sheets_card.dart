@@ -11,7 +11,10 @@ class TransactionCardSheets extends StatefulWidget {
   incomeTransactions; // Lista de transações de receitas
   final List<TransactionEntity>
   expenseTransactions; // Lista de transações de despesas
-  final Function(String id)
+
+  final Future<void> Function(String id) onEdit;
+
+  final Future<void> Function(String id)
   onDelete; // Callback para deletar uma transação pelo ID
 
   final Command1<void, Failure, TransactionEntity>
@@ -23,6 +26,7 @@ class TransactionCardSheets extends StatefulWidget {
     super.key,
     required this.incomeTransactions,
     required this.expenseTransactions,
+    required this.onEdit,
     required this.onDelete,
     required this.undoDelete,
     required this.scaffoldContext,
@@ -221,26 +225,36 @@ class _TransactionCardSheetsState extends State<TransactionCardSheets>
 
           return Dismissible(
             key: Key(transaction.id), // Chave única para controle do widget
-            direction:
-                DismissDirection
-                    .endToStart, // Permite deslizar da direita para esquerda
+            direction: DismissDirection.horizontal,
+            confirmDismiss: (direction) async {
+              if (direction == DismissDirection.startToEnd) {
+                await widget.onEdit(transaction.id);
+                return false;
+              }
+              return true;
+            },
             background: Container(
-              alignment:
-                  Alignment.centerRight, // Ícone aparece alinhado à direita
-              padding: const EdgeInsets.only(
-                right: 20.0,
-              ), // Espaçamento interno
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 20.0),
               decoration: BoxDecoration(
-                color: Colors.red, // Fundo vermelho para exclusão
+                color: Colors.green,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.delete,
+                Icons.edit,
                 color: Colors.white,
-              ), // Ícone de exclusão
+              ), // Ícone de edição
+            ),
+            secondaryBackground: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20.0),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.delete, color: Colors.white),
             ),
             onDismissed: (direction) async {
-              
               await widget.onDelete(
                 transaction.id,
               ); // Chama callback para deletar transação

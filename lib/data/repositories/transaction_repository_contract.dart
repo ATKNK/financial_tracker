@@ -14,6 +14,8 @@ abstract class TransactionRepositoryContract {
     DateTime startDate,
     DateTime endDate,
   );
+  Future<Result<void, Failure>> updateTransaction(String id);
   Future<Result<void, Failure>> deleteTransacion(String id);
   Future<Result<void, Failure>> saveTransacion(TransactionEntity transaction);
+  Future<Result<void, Failure>> updateTransacion(TransactionEntity transaction);
 }

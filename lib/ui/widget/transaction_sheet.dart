@@ -10,6 +10,9 @@ class TransactionSheet extends StatelessWidget {
   /// Tipo da transação (receita ou despesa)
   final TransactionType type;
 
+  /// Transação inicial para edição. Se nulo, é um cadastro novo.
+  final TransactionEntity? initialTransaction;
+
   /// Comando que deve ser observado o estado de execução
   /// e o resultado da execução
   final Command1<void, Failure, TransactionEntity> submitCommand;
@@ -20,6 +23,7 @@ class TransactionSheet extends StatelessWidget {
   const TransactionSheet({
     super.key,
     required this.type,
+    this.initialTransaction,
     // required this.onSubmit,
     required this.submitCommand,
   });
@@ -28,6 +32,7 @@ class TransactionSheet extends StatelessWidget {
   static Future<void> show({
     required BuildContext context,
     required TransactionType type,
+    TransactionEntity? initialTransaction,
     // required Function(TransactionEntity newTransaction) onSubmit,
     required Command1<void, Failure, TransactionEntity> submitCommand,
   }) async {
@@ -38,6 +43,7 @@ class TransactionSheet extends StatelessWidget {
       builder:
           (context) => TransactionSheet(
             type: type,
+            initialTransaction: initialTransaction,
             // onSubmit: onSubmit,
             submitCommand: submitCommand,
           ),
@@ -50,7 +56,10 @@ class TransactionSheet extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final isIncome = type == TransactionType.income;
     final color = isIncome ? colorScheme.primary : colorScheme.secondary;
-    final formTitle = type.nameSingular; // Retorna 'Receita' ou 'Despesa'
+    final formTitle =
+        initialTransaction == null
+            ? 'Adicionar ${type.nameSingular}'
+            : 'Editar ${type.nameSingular}';
 
     // Altura disponível para o bottom sheet (75% da altura da tela)
     final availableHeight = MediaQuery.of(context).size.height * 0.75;
@@ -101,7 +110,7 @@ class TransactionSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Adicionar $formTitle',
+                        formTitle,
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
@@ -125,6 +134,7 @@ class TransactionSheet extends StatelessWidget {
                 child: TransactionForm(
                   type: type,
                   color: color,
+                  initialTransaction: initialTransaction,
                   submitCommand: submitCommand,
                   // onSubmit: (newTransaction) {
                   //   onSubmit(newTransaction);

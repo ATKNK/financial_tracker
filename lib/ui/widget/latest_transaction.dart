@@ -1,20 +1,28 @@
 import 'package:financial_tracker/common/utils/formatter.dart';
+import 'package:financial_tracker/domain/entity/transaction_entity.dart';
 import 'package:flutter/material.dart';
 
 class LatestTransaction extends StatelessWidget {
   final double transactionValue;
   final String transactionTitle;
+  final TransactionType transactionType;
 
   const LatestTransaction({
     super.key,
     required this.transactionValue,
     required this.transactionTitle,
+    required this.transactionType,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final isIncome = transactionType == TransactionType.income;
+
+    final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
+    final iconColor = isIncome ? Colors.green : Colors.red;
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -35,21 +43,23 @@ class LatestTransaction extends StatelessWidget {
           children: [
             Text(
               transactionTitle,
-              style: TextStyle(color: Colors.white, fontSize: 13),
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
             Row(
               children: [
                 Text(
                   Formatter.formatCurrency(transactionValue),
-                  style: TextStyle(color: Colors.white, fontSize: 15),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSecondary.withValues(alpha: 0.45),
-                    shape: BoxShape.circle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Icon(Icons.arrow_upward, color: Colors.green),
+                ),
+                CircleAvatar(
+                  radius: 12,
+                  backgroundColor: colorScheme.onSecondary.withValues(
+                    alpha: 0.45,
+                  ),
+                  child: Icon(icon, size: 14, color: iconColor),
                 ),
               ],
             ),

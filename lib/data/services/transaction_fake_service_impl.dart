@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:financial_tracker/common/errors/errors_messagens.dart';
 import 'package:financial_tracker/helper/transaction_fake_repository.dart';
 
 import '../../common/errors/errors_classes.dart';
@@ -38,9 +39,31 @@ class TransactionFakeServiceImpl implements TransactionStorageContract {
   }
 
   @override
-  Future<Result<TransactionEntity, Failure>> fetchTransacion(String id) {
-    // TODO: implement fetchTransacion
-    throw UnimplementedError();
+  Future<Result<TransactionEntity, Failure>> fetchTransacion(String id) async {
+    try {
+      final result = await _api.getData();
+      final List<dynamic> jsonList = jsonDecode(result);
+      final transactions =
+          jsonList
+              .map(
+                (item) =>
+                    TransactionEntity.fromMap(item as Map<String, dynamic>),
+              )
+              .toList();
+      final transaction = transactions.firstWhere(
+        (element) => element.id == id,
+        orElse: () => throw RecordNotFound(MessagesError.recordNotFound),
+      );
+      return Success(transaction);
+    } on RecordNotFound catch (e) {
+      return Error(RecordNotFound(e.toString()));
+    } on DatasourceResultEmpty catch (e) {
+      return Error(DatasourceResultEmpty(e.toString()));
+    } on APIFailure catch (e) {
+      return Error(APIFailure(e.toString()));
+    } on Exception catch (e) {
+      return Error(DefaultError('Erro ao buscar transação: ${e.toString()}'));
+    }
   }
 
   @override
@@ -49,6 +72,23 @@ class TransactionFakeServiceImpl implements TransactionStorageContract {
   ) {
     // TODO: implement fetchTransacionsByTipe
     throw UnimplementedError();
+  }
+
+  @override
+  Future<Result<void, Failure>> updateTransaction(String id) async {
+    try {
+      await _api.updateData(id);
+
+      return Success(null);
+    } on RecordNotFound catch (e) {
+      return Error(RecordNotFound('Na atualização: ${e.toString()}'));
+    } on APIFailure catch (e) {
+      return Error(APIFailure(e.toString()));
+    } on Exception catch (e) {
+      return Error(
+        DefaultError('Erro ao atualizar a transação: ${e.toString()}'),
+      );
+    }
   }
 
   @override
